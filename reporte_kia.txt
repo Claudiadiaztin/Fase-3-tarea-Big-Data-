@@ -1,0 +1,183 @@
+
+==============================================================================
+PASO 1 - DIRECTORIO DE SALIDA
+==============================================================================
+Carpeta : /home/vboxuser/Escritorio/BIGDATA 3/fase1_kia
+
+Dataset: /home/vboxuser/Descargas/vehiculos_matriculados.csv
+Tamano : 1,387,510 bytes
+
+==============================================================================
+PASO 2 - CARGA, ESQUEMA Y LIMPIEZA
+==============================================================================
+df.count() : 16,943
+Columnas   : 8
+
+printSchema():
+root
+ |-- ORDEN: integer (nullable = true)
+ |-- CLASE: string (nullable = true)
+ |-- MARCA: string (nullable = true)
+ |-- MODELO: integer (nullable = true)
+ |-- FECHA MATRICULA/RADICACION: string (nullable = true)
+ |-- AÑO: integer (nullable = true)
+ |-- MES: string (nullable = true)
+ |-- DIA: string (nullable = true)
+
+
+Filas totales tras limpieza : 16,943
+
+==============================================================================
+PASO 3 - PREGUNTA CENTRAL: MARCA KIA
+==============================================================================
+
+  Vehiculos de la marca KIA matriculados entre
+  01/01/2020 y 31/05/2022
+
+  Control previo: como aparece escrita la marca en TODO el archivo
+    KIA               200
+    KIAMASTER           2
+
+  Se reportan por separado KIA y KIAMASTER porque son cadenas
+  distintas. Sumarlas seria una decision del analista, no del dato.
+
+  ============================================================
+        34 VEHICULOS KIA
+  ============================================================
+
+  Ventana 01/01/2020 - 31/05/2022
+    KIA (exacto)           :      34
+    KIAMASTER (variante)   :       1
+    ------------------------------------------
+    Total si se incluyen   :      35
+
+  Base de comparacion:
+    Vehiculos en la ventana        :     1,421
+    KIA sobre el total de ventana  :     2.39%
+    KIA sobre toda la marca (archivo completo):     200
+    Posicion de KIA entre marcas : #     12 de 84
+
+==============================================================================
+PASO 4 - DESAGREGACION DE KIA
+==============================================================================
+
+4.1  KIA por clase de vehiculo
++-----------+----+-------+
+| clase     | n  | pct   |
++-----------+----+-------+
+| AUTOMOVIL | 21 | 61.76 |
+| CAMIONETA | 7  | 20.59 |
+| MICROBUS  | 2  | 5.88  |
+| CAMION    | 2  | 5.88  |
+| CAMPERO   | 2  | 5.88  |
++-----------+----+-------+
+(5 filas en total)
+
+4.2  KIA por anio del modelo
++--------+---+
+| modelo | n |
++--------+---+
+| 2021   | 7 |
+| 2012   | 6 |
+| 2014   | 3 |
+| 2020   | 3 |
+| 2022   | 3 |
+| 2016   | 2 |
+| 1994   | 2 |
+| 2013   | 2 |
+| 2015   | 1 |
+| 2002   | 1 |
+| 2010   | 1 |
+| 2011   | 1 |
+| 2003   | 1 |
+| 2017   | 1 |
++--------+---+
+(14 filas en total)
+
+4.3  KIA matriculados mes a mes
++----------+----+
+| anio_mes | n  |
++----------+----+
+| 2020-01  | 20 |
+| 2020-02  | 2  |
+| 2020-09  | 1  |
+| 2021-06  | 2  |
+| 2021-07  | 1  |
+| 2021-08  | 1  |
+| 2021-09  | 2  |
+| 2021-10  | 2  |
+| 2021-12  | 3  |
++----------+----+
+(9 filas en total)
+
+4.4  KIA por ano de matricula
++------+----+
+| anio | n  |
++------+----+
+| 2020 | 23 |
+| 2021 | 11 |
++------+----+
+(2 filas en total)
+
+4.5  Ranking de las 15 marcas mas matriculadas en la ventana
++-----------+-----+
+| marca     | n   |
++-----------+-----+
+| CHEVROLET | 260 |
+| RENAULT   | 140 |
+| BAJAJ     | 100 |
+| MAZDA     | 97  |
+| YAMAHA    | 84  |
+| VICTORY   | 76  |
+| SUZUKI    | 57  |
+| TOYOTA    | 41  |
+| KYMCO     | 37  |
+| NISSAN    | 37  |
+| TVS       | 35  |
+| KIA       | 34  |
+| AKT       | 32  |
+| FORD      | 32  |
+| HONDA     | 31  |
++-----------+-----+
+(15 filas en total)
+
+4.6  Contexto de KIA en el archivo completo (2000-2022)
+     Total KIA matriculados en todo el archivo :     200
+     De esos, dentro de la ventana 2020-05/2022 :      34
+     Porcentaje del total KIA en la ventana     :   17.00%
+
+==============================================================================
+PASO 5 - VISUALIZACION DE LOS RESULTADOS EN BATCH
+==============================================================================
+
+  [PNG] g1_kia_respuesta.png                        25.2 KB   <- la respuesta central
+  [PNG] g2_kia_por_clase.png                        20.4 KB   <- que tipo de vehiculo compra Kia
+  [PNG] g3_kia_mensual.png                          23.9 KB   <- evolucion mensual
+  [PNG] g4_ranking_marcas.png                       34.1 KB   <- posicion de KIA
+  [PNG] g5_kia_ano_modelo.png                       19.1 KB   <- antiguedad del parque KIA
+  [PNG] g6_kia_contexto.png                         21.7 KB   <- cuanto del total KIA cae en la ventana
+
+Total de graficos: 6
+
+==============================================================================
+PASO 6 - EVIDENCIA EN CONSOLA (.show)
+==============================================================================
+
+[.show] KIA por clase:
+
+[.show] Ranking de marcas en la ventana:
+
+==============================================================================
+METADATOS
+==============================================================================
+Inicio    : 2026-10-16 02:17:39
+Fin       : 2026-10-16 02:17:53
+Duracion  : 13.9 segundos
+Spark     : 3.5.1
+Python    : 3.10.12
+matplotlib: 3.10.9
+Dataset   : /home/vboxuser/Descargas/vehiculos_matriculados.csv
+Ventana   : 2020-01-01 a 2022-05-31
+
+RESPUESTA: 34 vehiculos KIA matriculados entre 2020-01 y 2022-05
+           (KIAMASTER aparte: 1)

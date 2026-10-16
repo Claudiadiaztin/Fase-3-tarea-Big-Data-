@@ -1,0 +1,286 @@
+
+==============================================================================
+PASO 1 - DIRECTORIO DE SALIDA
+==============================================================================
+Carpeta : /home/vboxuser/Escritorio/BIGDATA 3/fase1_vehiculos
+
+Dataset: /home/vboxuser/Descargas/vehiculos_matriculados.csv
+Tamano : 1,387,510 bytes
+
+==============================================================================
+PASO 2a - CARGA Y ESQUEMA
+==============================================================================
+df.count() : 16,943
+Columnas   : 8
+
+printSchema():
+root
+ |-- ORDEN: integer (nullable = true)
+ |-- CLASE: string (nullable = true)
+ |-- MARCA: string (nullable = true)
+ |-- MODELO: integer (nullable = true)
+ |-- FECHA MATRICULA/RADICACION: string (nullable = true)
+ |-- AÑO: integer (nullable = true)
+ |-- MES: string (nullable = true)
+ |-- DIA: string (nullable = true)
+
+
+==============================================================================
+PASO 2b - LIMPIEZA
+==============================================================================
+Columnas renormal: ['orden', 'clase', 'marca', 'modelo', 'fecha', 'anio', 'mes', 'dia']
+
+Nulos por columna:
+  orden               0
+  clase               0
+  marca               0
+  modelo              0
+  fecha               0
+  anio                0
+  mes                 0
+  dia                 0
+
+Fechas no parseables: 0
+
+==============================================================================
+PASO 3 - AUDITORIA: ¿SE PUEDE RESPONDER LA PREGUNTA?
+==============================================================================
+
+  Pregunta: cuantos vehiculos HIBRIDOS y ELECTRICOS se matricularon
+            entre enero de 2020 y mayo de 2022?
+
+  --------------------------------------------------------------------------
+  1) Columnas disponibles en el archivo:
+       - orden
+       - clase
+       - marca
+       - modelo
+       - fecha
+       - anio
+       - mes
+       - dia
+       - fecha_dt
+
+  2) Columnas que podrian identificar la propulsion: NINGUNA
+
+  3) Barrido de las 16,943 filas buscando las palabras
+     'hibrid' / 'hibrido' / 'electr' / 'plugin' / 'combustible':
+       RESULTADO: 0 coincidencias en todas las columnas
+
+  --------------------------------------------------------------------------
+  CONCLUSION: LA PREGUNTA NO ES RESPONDIBLE CON ESTE ARCHIVO.
+  --------------------------------------------------------------------------
+
+  Razon tecnica: el dataset no registra la tecnologia de propulsion
+  del vehiculo. Solo tiene CLASE (tipo de carroceria), MARCA y
+  MODELO (que en este archivo es el ANIO del modelo, no el nombre
+  del modelo). No hay forma de distinguir un Toyota Corolla a
+  gasolina de un Toyota Prius hibrido, porque ambos serian
+  MARCA=TOYOTA y CLASE=AUTOMOVIL.
+
+  Inferirlo por marca tampoco es valido: Toyota, Renault, Kia,
+  Hyundai, BMW y Ford venden versiones a gasolina, hibridas y
+  electricas bajo la misma marca. Asignar 'hibrido' a toda marca
+  que lo tenga en su catalogo daria un numero inventado.
+
+  4) Sobre la columna MODELO:
+     valores distintos: 84
+     de los cuales son un anio de 4 digitos: 84 / 84
+     ejemplos: ['1988', '2001', '1998', '1986', '1959', '1971', '2002', '1957']
+     -> MODELO es el ANIO del modelo, no el nombre comercial.
+        Por eso no permite identificar vehiculos hibridos/electricos.
+
+  5) Discrepancia en el nombre del archivo:
+     El nombre dice 'desde enero de 2020 hasta mayo de 2022'.
+     Rango REAL de fechas en el archivo: 01/01/2000  ->  10/06/2022
+     El archivo cubre 23 anos, no 28 meses.
+
+==============================================================================
+PASO 4 - LO QUE SI ES MEDIBLE: ENERO 2020 - MAYO 2022
+==============================================================================
+
+  Ventana analizada: 01/01/2020 - 31/05/2022
+  Vehiculos matriculados en la ventana: 1,421
+  (esto es el total de la ventana, NO el conteo de hibridos/electricos)
+
+  Lo que NO se puede desglosar:
+    - hibridos
+    - electricos
+    - total por tecnologia de propulsion
+
+  4.1  Por clase de vehiculo (ventana 2020-01 a 2022-05)
++---------------+-----+-------+
+| clase         | n   | pct   |
++---------------+-----+-------+
+| MOTOCICLETA   | 453 | 31.88 |
+| AUTOMOVIL     | 425 | 29.91 |
+| CAMIONETA     | 181 | 12.74 |
+| CAMPERO       | 142 | 9.99  |
+| CAMION        | 104 | 7.32  |
+| TRACTO CAMION | 64  | 4.5   |
+| VOLQUETA      | 13  | 0.91  |
+| MOTOCARRO     | 13  | 0.91  |
+| MICROBUS      | 7   | 0.49  |
+| REMOLQUE      | 6   | 0.42  |
+| BUS           | 5   | 0.35  |
+| BUSETA        | 5   | 0.35  |
+| MINITRACTOR   | 1   | 0.07  |
+| CICLOMOTOR    | 1   | 0.07  |
+| SEMIREMOQLUE  | 1   | 0.07  |
++---------------+-----+-------+
+(15 filas en total)
+
+  4.2  Top 15 marcas (ventana 2020-01 a 2022-05)
++-----------+-----+
+| marca     | n   |
++-----------+-----+
+| CHEVROLET | 260 |
+| RENAULT   | 140 |
+| BAJAJ     | 100 |
+| MAZDA     | 97  |
+| YAMAHA    | 84  |
+| VICTORY   | 76  |
+| SUZUKI    | 57  |
+| TOYOTA    | 41  |
+| KYMCO     | 37  |
+| NISSAN    | 37  |
+| TVS       | 35  |
+| KIA       | 34  |
+| AKT       | 32  |
+| FORD      | 32  |
+| HONDA     | 31  |
++-----------+-----+
+(15 filas en total)
+
+  4.3  Por mes (ventana 2020-01 a 2022-05)
++----------+-----+
+| anio_mes | n   |
++----------+-----+
+| 2020-01  | 546 |
+| 2020-02  | 54  |
+| 2020-03  | 26  |
+| 2020-05  | 5   |
+| 2020-06  | 5   |
+| 2020-08  | 1   |
+| 2020-09  | 5   |
+| 2020-11  | 1   |
+| 2020-12  | 4   |
+| 2021-01  | 60  |
+| 2021-02  | 6   |
+| 2021-03  | 3   |
+| 2021-04  | 3   |
+| 2021-05  | 38  |
+| 2021-06  | 55  |
+| 2021-07  | 101 |
+| 2021-08  | 78  |
+| 2021-09  | 102 |
+| 2021-10  | 70  |
+| 2021-11  | 47  |
+| 2021-12  | 60  |
+| 2022-01  | 29  |
+| 2022-02  | 31  |
+| 2022-03  | 36  |
+| 2022-04  | 45  |
+| 2022-05  | 10  |
++----------+-----+
+(26 filas en total)
+
+  4.4  Serie anual de TODO el archivo
++------+------+
+| anio | n    |
++------+------+
+| 2000 | 711  |
+| 2001 | 690  |
+| 2002 | 875  |
+| 2003 | 1022 |
+| 2004 | 1146 |
+| 2005 | 645  |
+| 2006 | 1062 |
+| 2007 | 1164 |
+| 2008 | 678  |
+| 2009 | 696  |
+| 2010 | 588  |
+| 2011 | 809  |
+| 2012 | 592  |
+| 2013 | 855  |
+| 2014 | 738  |
+| 2015 | 766  |
+| 2016 | 610  |
+| 2017 | 723  |
+| 2018 | 542  |
+| 2019 | 606  |
+| 2020 | 647  |
+| 2021 | 623  |
+| 2022 | 155  |
++------+------+
+(23 filas en total)
+
+  4.5  Antiguedad del modelo al matricular (todo el archivo)
++------+------+
+| edad | n    |
++------+------+
+| 0    | 5701 |
+| 1    | 380  |
+| 2    | 264  |
+| 3    | 275  |
+| 4    | 283  |
+| 5    | 319  |
+| 6    | 349  |
+| 7    | 331  |
+| 8    | 302  |
+| 9    | 313  |
+| 10   | 287  |
+| 11   | 251  |
+| 12   | 258  |
+| 13   | 214  |
+| 14   | 183  |
+| 15   | 158  |
+| 16   | 154  |
+| 17   | 103  |
+| 18   | 126  |
+| 19   | 115  |
+| 20   | 122  |
+| 21   | 129  |
+| 22   | 121  |
+| 23   | 105  |
+| 24   | 106  |
++------+------+
+(25 filas en total)
+
+==============================================================================
+PASO 5 - VISUALIZACION DE LOS RESULTADOS EN BATCH
+==============================================================================
+
+  [PNG] g1_auditoria_no_respondible.png             39.7 KB   <- alerta sobre el limite del dato
+  [PNG] g2_clases_ventana.png                       42.2 KB   <- lo que si es medible
+  [PNG] g3_marcas_ventana.png                       33.9 KB   <- concentracion por marca
+  [PNG] g4_serie_anual.png                          22.6 KB   <- rango real del archivo
+  [PNG] g5_mensual_ventana.png                      24.6 KB   <- detalle mes a mes
+  [PNG] g6_antiguedad_modelo.png                    29.2 KB   <- parque de vehiculos
+
+Total de graficos: 6
+
+==============================================================================
+PASO 6 - EVIDENCIA EN CONSOLA (.show)
+==============================================================================
+
+[.show] Por clase (ventana 2020-01 a 2022-05):
+
+[.show] Top marcas:
+
+==============================================================================
+METADATOS
+==============================================================================
+Inicio     : 2026-10-16 02:11:22
+Fin        : 2026-10-16 02:11:37
+Duracion   : 14.8 segundos
+Spark      : 3.5.1
+Python     : 3.10.12
+matplotlib : 3.10.9
+Dataset    : /home/vboxuser/Descargas/vehiculos_matriculados.csv
+Registros  : 16,943
+Ventana    : 1,421 matriculados 2020-01 a 2022-05
+
+RESPUESTA A LA PREGUNTA DE HIBRIDOS Y ELECTRICOS:
+  NO DETERMINABLE. El dataset no registra la tecnologia de propulsion.
+  Coincidencias de 'hibrid'/'electr' en 16943 filas: 0
